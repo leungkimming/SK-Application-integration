@@ -14,4 +14,4 @@
 * Then, the program will parse the replies from gpt-3.5-turbo and actually call the C# function
 * The output of the function will replace the {{}} before sending it back to users
 * Note that the quantity in stock is only a random number
-* These functions are for you to implement your application's real logic or call your real application's API
+* These functions are where you should implement your application's real logic or call your real application's API
