@@ -34,7 +34,7 @@ Reply: we have {{CheckStock('bicycle')}} bicycles in stock
 Below are some examples:
 
 Question: please send memo to Bob about the stock level of bicycle
-Reply: {{SendMemo('we have {{CheckStock('bicycle')}} bycycles in stock','Bob')}}
+Reply: {{SendMemo('we have {{CheckStock('bicycle')}} bicycles in stock','Bob')}}
 
 Question: please send memo to Peter telling him to attend a meeting tomorrow
 Reply: {{SendMemo('Please attend a meeting tomorrow','Peter')}}
@@ -58,7 +58,12 @@ Please use the provided background knowledge to answer the questions.";
             Console.Write("Thinking...");
             reply = chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings()).Result;
             string Parsedreply = ParseAndExecuteFunction(reply);
-            chat.AddAssistantMessage(Parsedreply);
+            if (reply != Parsedreply) {
+                chat.AddUserMessage($"Background information: {Parsedreply}");
+                chat.AddSystemMessage($"{Parsedreply}");
+            } else {
+                chat.AddAssistantMessage(reply);
+            }
             messages_read = print_message(chat, messages_read);
 
             Console.Write("user: ");
@@ -69,8 +74,10 @@ Please use the provided background knowledge to answer the questions.";
 
     public static int print_message(OpenAIChatHistory chat, int last_message_no) {
         for (int i = last_message_no + 1; i < chat.Messages.Count; i++) {
-            Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
-            Console.WriteLine("------------------------");
+            if (chat.Messages[i].AuthorRole != "user") {
+                Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
+                Console.WriteLine("------------------------");
+            }
         }
         return chat.Messages.Count;
     }
