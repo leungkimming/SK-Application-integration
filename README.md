@@ -6,7 +6,7 @@
 ## Please set your OpenAI API Key to Environment variable OpenAIKey before running the program
 
 ## Introduction
-* This program starts a chat with OpenAI gpt-3.5-turbo API service.
+* This program starts a chat with OpenAI gpt-3.5-turbo API service using your API key in the Environment variable 'OpenAIKey'.
 * A scenario is provided to gpt-3.5-turbo as a background knowledge.
 * In the scenario, gpt-3.5-turbo was taught what Warehouse function calls can be used to fulfil users' queries
 * For example, the CheckStock function can be represented below:
