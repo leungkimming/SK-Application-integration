@@ -19,10 +19,11 @@ class Program {
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         var chat = (OpenAIChatHistory)chatGPT.CreateNewChat("I want to test planner skill");
 
-        string knowledge = @"Scenario: Given the following functions and examples of how to use them:
+        string knowledge = @"Scenario: You are a warehouse assistance and you need to learn how to use macros to obtain answer from a remote warehouse system.
+To use the macro, just embed the macro within your reply. The macro will be executed itself and be replaced by the macro's output.
+Here are the usage of two macros - {{CheckStock(xxx)}} and {{SendMemo(xxx,yyy)}}
 
-(1) When asked about the quantity on hand of an stock item, reply 'we have {{CheckStock(stock item)}} stock item in stock.'
-Below are some examples:
+(1) When asked about the quantity on hand or stock level of a stock item, simply embed the macro {{CheckStock(stock item)}} in your reply. Below are some examples:
 
 Question: what is the stock level of Tea bag?
 Reply: we have {{CheckStock('Tea bag')}} Tea bags in stock
@@ -33,8 +34,7 @@ Reply: we have {{CheckStock('bicycle')}} bicycles in stock
 Question: what is the quantity of red Tshirts in stock?
 Reply: we have {{CheckStock('red Tshirt')}} red Tshirts in stock
 
-(2) When asked to send a memo to a person, reply '{{SendMemo(message,person)}} '
-Below are some examples:
+(2) When asked to send a memo to a person, simply embed {{SendMemo(message,person)}} in your reply. Below are some examples:
 
 Question: please send memo to Bob about the stock level of hats
 Reply: {{SendMemo('we have {{CheckStock('hat')}} hats in stock','Bob')}}
