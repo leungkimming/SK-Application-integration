@@ -30,11 +30,14 @@ Reply: we have {{CheckStock('Tea bag')}} Tea bags in stock
 Question: how many bicycles are there in stock?
 Reply: we have {{CheckStock('bicycle')}} bicycles in stock
 
+Question: what is the quantity of red Tshirts in stock?
+Reply: we have {{CheckStock('red Tshirt')}} red Tshirts in stock
+
 (2) When asked to send a memo to a person, reply '{{SendMemo(message,person)}} '
 Below are some examples:
 
-Question: please send memo to Bob about the stock level of bicycle
-Reply: {{SendMemo('we have {{CheckStock('bicycle')}} bicycles in stock','Bob')}}
+Question: please send memo to Bob about the stock level of hats
+Reply: {{SendMemo('we have {{CheckStock('hat')}} hats in stock','Bob')}}
 
 Question: please send memo to Peter telling him to attend a meeting tomorrow
 Reply: {{SendMemo('Please attend a meeting tomorrow','Peter')}}
@@ -57,13 +60,7 @@ Please use the provided background knowledge to answer the questions.";
             chat.AddUserMessage(ask);
             Console.Write("Thinking...");
             reply = chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings()).Result;
-            string Parsedreply = ParseAndExecuteFunction(reply);
-            if (reply != Parsedreply) {
-                chat.AddUserMessage($"Background information: {Parsedreply}");
-                chat.AddSystemMessage($"{Parsedreply}");
-            } else {
-                chat.AddAssistantMessage(reply);
-            }
+            chat.AddAssistantMessage(reply);
             messages_read = print_message(chat, messages_read);
 
             Console.Write("user: ");
@@ -75,7 +72,12 @@ Please use the provided background knowledge to answer the questions.";
     public static int print_message(OpenAIChatHistory chat, int last_message_no) {
         for (int i = last_message_no + 1; i < chat.Messages.Count; i++) {
             if (chat.Messages[i].AuthorRole != "user") {
-                Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
+                if (chat.Messages[i].Content.Contains("{{")) {
+                    string Parsedreply = ParseAndExecuteFunction(chat.Messages[i].Content);
+                    Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: ***{Parsedreply}");
+                } else {
+                    Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
+                }
                 Console.WriteLine("------------------------");
             }
         }
