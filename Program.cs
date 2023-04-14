@@ -9,18 +9,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI.ChatCompletion;
 
 class Program {
     static void Main(string[] args) {
-        Console.WriteLine("======== SK with ChatGPT ========");
-
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OpenAIKey"));
-
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat("I want to test planner skill");
-
-        string knowledge = @"Scenario: You are a warehouse assistance and you need to learn how to use macros to obtain answer from a remote warehouse system.
-To use the macro, just embed the macro within your reply. The macro will be executed itself and be replaced by the macro's output.
+        string knowledge = @"Scenario: You are a warehouse assistance and you use macros to obtain answer from a remote warehouse system.
+To use macros, just embed the macro within your reply. The macro will be executed itself and be replaced by the macro's output.
 Here are the usage of two macros - {{CheckStock(xxx)}} and {{SendMemo(xxx,yyy)}}
 
 (1) When asked about the quantity on hand or stock level of a stock item, simply embed the macro {{CheckStock(stock item)}} in your reply. Below are some examples:
@@ -34,7 +24,8 @@ Reply: we have {{CheckStock('bicycle')}} bicycles in stock
 Question: what is the quantity of red Tshirts in stock?
 Reply: we have {{CheckStock('red Tshirt')}} red Tshirts in stock
 
-(2) When asked to send a memo to a person, simply embed {{SendMemo(message,person)}} in your reply. Below are some examples:
+(2) When asked to send a memo to a person, simply embed the marco {{SendMemo(message,person)}} in your reply.
+Do not concatenate the marco with stings. Below are some examples:
 
 Question: please send memo to Bob about the stock level of hats
 Reply: {{SendMemo('we have {{CheckStock('hat')}} hats in stock','Bob')}}
@@ -44,19 +35,27 @@ Reply: {{SendMemo('Please attend a meeting tomorrow','Peter')}}
 
 Please use the provided background knowledge to answer the questions.";
 
-        int messages_read = 1;
+        Console.WriteLine("======== SK with ChatGPT ========");
+
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+
+        // Add your chat completion service
+        kernel.Config.AddOpenAIChatCompletionService("chat", "gpt-3.5-turbo", Env.Var("OpenAIKey"));
+
+        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+        var chat = (OpenAIChatHistory)chatGPT.CreateNewChat(knowledge);
+
+        int messages_read = 0;
         Console.WriteLine("Chat background knowledge:");
         Console.WriteLine(knowledge);
         Console.WriteLine("-------------------------------------------");
-        chat.AddUserMessage(knowledge);
-
         Console.Write("Studying...");
         string reply = chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings()).Result;
-        chat.AddAssistantMessage(reply);
+        chat.AddAssistantMessage("Can I help you?");
         messages_read = print_message(chat, messages_read);
         Console.Write("user: ");
         string ask = Console.ReadLine();
-        while (ask.ToLower() != "end") {
+        while (ask.ToLower() != "bye") {
             chat.AddUserMessage(ask);
             Console.Write("Thinking...");
             reply = chatGPT.GenerateMessageAsync(chat, new ChatRequestSettings()).Result;
@@ -66,17 +65,25 @@ Please use the provided background knowledge to answer the questions.";
             Console.Write("user: ");
             ask = Console.ReadLine();
         }
-        Console.WriteLine("END Chat");
+        chat.AddAssistantMessage("You are welcome!");
+        messages_read = print_message(chat, messages_read -1);
     }
 
     public static int print_message(OpenAIChatHistory chat, int last_message_no) {
+        Console.WriteLine("");
         for (int i = last_message_no + 1; i < chat.Messages.Count; i++) {
             if (chat.Messages[i].AuthorRole != "user") {
                 if (chat.Messages[i].Content.Contains("{{")) {
-                    string Parsedreply = ParseAndExecuteFunction(chat.Messages[i].Content);
-                    Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: ***{Parsedreply}");
+                    string Parsedreply = "Sorry, something wrong. Please try again.";
+                    try {
+                        Parsedreply = ParseAndExecuteFunction(chat.Messages[i].Content);
+                    } catch (Exception e) {
+                        Console.WriteLine($"Raw reply: {chat.Messages[i].Content}");
+                        Console.WriteLine($"error: {e.Message}\n{e.StackTrace}");
+                    }
+                    Console.WriteLine($"{chat.Messages[i].AuthorRole}: ***{Parsedreply}");
                 } else {
-                    Console.WriteLine($"\n{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
+                    Console.WriteLine($"{chat.Messages[i].AuthorRole}: {chat.Messages[i].Content}");
                 }
                 Console.WriteLine("------------------------");
             }
