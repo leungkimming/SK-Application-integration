@@ -1,10 +1,9 @@
 # Example of Semantic Kernel integration with Warehouse Application
-
+## Reference
+* https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
 ## This example uses below Nuget
 [![SemanticKernel Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
-
 ## Please set your OpenAI API Key to Environment variable OpenAIKey before running the program
-
 ## Introduction
 * This program starts a chat with OpenAI gpt-3.5-turbo API service using your API key in the Environment variable 'OpenAIKey'.
 * A scenario is provided to gpt-3.5-turbo as a background knowledge.
